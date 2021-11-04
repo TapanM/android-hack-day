@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AndroidHackDay</string>
+    <string name="assets">Assets</string>
+    <string name="crypto">Crypto</string>
+    <string name="usd_price">$%1$s</string>
+    <string name="btc_price">%1$s BTC</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
+</resources>
