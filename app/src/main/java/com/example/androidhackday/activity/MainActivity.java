@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 
@@ -114,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
                             if(isAnyPriceChanged(coin, latestPriceUsd, null)) {
                                 mAdapter.notifyItemChanged(0);
                             }
+
+                            sendToNative(coin);
+
                         } else if(Objects.equals(coin.getId(), SupportedCoins.ETH.getId())) {
 
                             String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getEthereum().getUsd());
@@ -121,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
                             if(isAnyPriceChanged(coin, latestPriceUsd, latestPriceBtc)) {
                                 mAdapter.notifyItemChanged(1);
                             }
+
+                            sendToNative(coin);
 
                         } else if(Objects.equals(coin.getId(), SupportedCoins.BNB.getId())) {
 
@@ -130,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
                                 mAdapter.notifyItemChanged(2);
                             }
 
+                            sendToNative(coin);
+
                         } else if(Objects.equals(coin.getId(), SupportedCoins.BAT.getId())) {
 
                             String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getBasicAttentionToken().getUsd());
@@ -137,10 +145,8 @@ public class MainActivity extends AppCompatActivity {
                             if(isAnyPriceChanged(coin, latestPriceUsd, latestPriceBtc)) {
                                 mAdapter.notifyItemChanged(3);
                             }
+                            sendToNative(coin);
                         }
-
-                        String logData = getLogsData(coin.getSymbol(), coin.getUsd());
-                        AppUtils.writeToFile(MainActivity.this, logData);
                     }
                 }
                 periodicallyApiCall();
@@ -164,6 +170,11 @@ public class MainActivity extends AppCompatActivity {
             isAnyPriceChanged = true;
         }
         return isAnyPriceChanged;
+    }
+
+    private void sendToNative(SupportedCoins coin) {
+        String logData = getLogsData(coin.getSymbol(), coin.getUsd());
+        AppUtils.writeToFile(MainActivity.this, logData);
     }
 
     private void periodicallyApiCall() {
