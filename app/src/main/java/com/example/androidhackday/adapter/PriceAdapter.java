@@ -18,10 +18,11 @@ import java.util.Objects;
 public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.ViewHolder> {
 
     private final Context context;
-    private List<SupportedCoins> coinsList = new ArrayList<>();
+    private final List<SupportedCoins> coinsList;
 
-    public PriceAdapter(Context context) {
+    public PriceAdapter(Context context, List<SupportedCoins> coinsList) {
         this.context = context;
+        this.coinsList = coinsList;
     }
 
     @Override
@@ -45,8 +46,10 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.ViewHolder> 
         }
 
         holder.itemPriceAdapterBinding.tvName.setText(coin.getName());
-        holder.itemPriceAdapterBinding.tvPriceUsd.setText(context.getString(R.string.usd_price, coin.getUsd()));
-        if(!Objects.equals(coin.getId(), SupportedCoins.BTC.getId())) {
+        if(coin.getUsd()!=null) {
+            holder.itemPriceAdapterBinding.tvPriceUsd.setText(context.getString(R.string.usd_price, coin.getUsd()));
+        }
+        if(coin.getBtc()!=null && !Objects.equals(coin.getId(), SupportedCoins.BTC.getId())) {
             holder.itemPriceAdapterBinding.tvPriceBtc.setText(context.getString(R.string.btc_price, coin.getBtc()));
         }
     }
@@ -68,10 +71,5 @@ public class PriceAdapter extends RecyclerView.Adapter<PriceAdapter.ViewHolder> 
             super(viewBinding.getRoot());
             this.itemPriceAdapterBinding = viewBinding;
         }
-    }
-
-    public void setCoinsList(List<SupportedCoins> coinsList) {
-        this.coinsList = coinsList;
-        notifyDataSetChanged();
     }
 }

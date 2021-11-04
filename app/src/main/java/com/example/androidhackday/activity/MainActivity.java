@@ -6,8 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 
@@ -18,7 +16,6 @@ import com.example.androidhackday.databinding.ActivityMainBinding;
 import com.example.androidhackday.listener.ApiManagerListener;
 import com.example.androidhackday.model.SupportedCoins;
 import com.example.androidhackday.model.Crypto;
-import com.example.androidhackday.model.SupportedCurrencies;
 import com.example.androidhackday.utils.AppUtils;
 
 import java.util.ArrayList;
@@ -37,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
     private final Handler mHandler = new Handler();
-    private List<SupportedCoins> mCryptoSupportedCoinsList = new ArrayList<>();
+    private final List<SupportedCoins> mCryptoSupportedCoinsList = new ArrayList<>();
     private String mCryptoCoinIds = "";
     private PriceAdapter mAdapter;
 
@@ -71,17 +68,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void setRecyclerView() {
 
+        mCryptoSupportedCoinsList.addAll(Arrays.asList(SupportedCoins.values()));
+
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mBinding.recyclerView.setLayoutManager(llm);
 
-        mAdapter = new PriceAdapter(this);
+        mAdapter = new PriceAdapter(this, mCryptoSupportedCoinsList);
         mBinding.recyclerView.setAdapter(mAdapter);
     }
 
     private void getCryptoCoins() {
 
-        mCryptoSupportedCoinsList.addAll(Arrays.asList(SupportedCoins.values()));
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             if (mCryptoSupportedCoinsList != null) {
 
@@ -111,19 +109,36 @@ public class MainActivity extends AppCompatActivity {
                     for(SupportedCoins coin : mCryptoSupportedCoinsList) {
 
                         if(Objects.equals(coin.getId(), SupportedCoins.BTC.getId())) {
-                            coin.setUsd(AppUtils.getFormattedPrice(crypto.getBitcoin().getUsd()));
+
+                            String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getBitcoin().getUsd());
+                            if(isAnyPriceChanged(coin, latestPriceUsd, null)) {
+                                mAdapter.notifyItemChanged(0);
+                            }
                         } else if(Objects.equals(coin.getId(), SupportedCoins.ETH.getId())) {
-                            coin.setUsd(AppUtils.getFormattedPrice(crypto.getEthereum().getUsd()));
-                            coin.setBtc(AppUtils.getFormattedPrice(crypto.getEthereum().getBtc()));
+
+                            String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getEthereum().getUsd());
+                            String latestPriceBtc = AppUtils.getFormattedPrice(crypto.getEthereum().getBtc());
+                            if(isAnyPriceChanged(coin, latestPriceUsd, latestPriceBtc)) {
+                                mAdapter.notifyItemChanged(1);
+                            }
+
                         } else if(Objects.equals(coin.getId(), SupportedCoins.BNB.getId())) {
-                            coin.setUsd(AppUtils.getFormattedPrice(crypto.getBinanceCoin().getUsd()));
-                            coin.setBtc(AppUtils.getFormattedPrice(crypto.getBinanceCoin().getBtc()));
+
+                            String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getBinanceCoin().getUsd());
+                            String latestPriceBtc = AppUtils.getFormattedPrice(crypto.getBinanceCoin().getBtc());
+                            if(isAnyPriceChanged(coin, latestPriceUsd, latestPriceBtc)) {
+                                mAdapter.notifyItemChanged(2);
+                            }
+
                         } else if(Objects.equals(coin.getId(), SupportedCoins.BAT.getId())) {
-                            coin.setUsd(AppUtils.getFormattedPrice(crypto.getBasicAttentionToken().getUsd()));
-                            coin.setBtc(AppUtils.getFormattedPrice(crypto.getBasicAttentionToken().getBtc()));
+
+                            String latestPriceUsd = AppUtils.getFormattedPrice(crypto.getBasicAttentionToken().getUsd());
+                            String latestPriceBtc = AppUtils.getFormattedPrice(crypto.getBasicAttentionToken().getBtc());
+                            if(isAnyPriceChanged(coin, latestPriceUsd, latestPriceBtc)) {
+                                mAdapter.notifyItemChanged(3);
+                            }
                         }
 
-                        mAdapter.setCoinsList(mCryptoSupportedCoinsList);
                         String logData = getLogsData(coin.getSymbol(), coin.getUsd());
                         AppUtils.writeToFile(MainActivity.this, logData);
                     }
@@ -136,6 +151,19 @@ public class MainActivity extends AppCompatActivity {
                 periodicallyApiCall();
             }
         });
+    }
+
+    private boolean isAnyPriceChanged(SupportedCoins coin, String latestPriceUsd, String latestPriceBtc) {
+        boolean isAnyPriceChanged = false;
+        if(!latestPriceUsd.equalsIgnoreCase(coin.getUsd())) {
+            coin.setUsd(latestPriceUsd);
+            isAnyPriceChanged = true;
+        }
+        if(latestPriceBtc!=null && !latestPriceBtc.equalsIgnoreCase(coin.getBtc())) {
+            coin.setBtc(latestPriceBtc);
+            isAnyPriceChanged = true;
+        }
+        return isAnyPriceChanged;
     }
 
     private void periodicallyApiCall() {
