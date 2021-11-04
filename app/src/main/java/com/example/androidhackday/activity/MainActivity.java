@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 
@@ -23,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private final List<SupportedCoins> mCryptoSupportedCoinsList = new ArrayList<>();
     private String mCryptoCoinIds = "";
     private PriceAdapter mAdapter;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,7 +176,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendToNative(SupportedCoins coin) {
         String logData = getLogsData(coin.getSymbol(), coin.getUsd());
-        AppUtils.writeToFile(MainActivity.this, logData);
+
+        mExecutor.execute(() -> AppUtils.writeToFile(MainActivity.this, logData));
     }
 
     private void periodicallyApiCall() {
